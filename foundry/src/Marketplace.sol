@@ -11,7 +11,7 @@ contract Marketplace is ERC1155,Ownable
     uint256 public constant Tier5 = 5;
     uint public constant mintingLimit=20;
     bytes32 private constant MINTER = keccak256(abi.encode("MINTER")) ;
-    constructor() public ERC1155("https://game.example/api/item/") 
+    constructor(string memory _apiEndPoint) public ERC1155(_apiEndPoint) 
     {
         setInitialPrice();
     }
@@ -30,16 +30,17 @@ contract Marketplace is ERC1155,Ownable
     }
     function mintToken(uint _tierNumber,uint _nooftokens) public payable 
     {
+        uint totalamount=tiertovalue[_tierNumber]*_nooftokens;
         require((balanceOf(msg.sender, _tierNumber)+_nooftokens)<=mintingLimit,"you have reached the minting Limit");
         require(roles[MINTER][msg.sender],"You are not the minter");
-        require(msg.value==tiertovalue[_tierNumber],"Required Amount is not paid");
+        require(msg.value==totalamount,"Required Amount is not paid");
         _mint(msg.sender, _tierNumber, _nooftokens, "");
     }
     function burnToken(uint _tierNumber,uint _nooftokens) public 
     {
         require(roles[MINTER][msg.sender],"You are not the minter");
         require(balanceOf(msg.sender, _tierNumber)>=_nooftokens,"You do not have enough tokens");
-        payable (msg.sender).transfer(5e16);
+        (bool sent,)=payable (msg.sender).call{value:5e16*(_nooftokens)}("");
         _burn(msg.sender, _tierNumber, _nooftokens);
     }
     function updateTokenPrice(uint tier1price,uint tier2price,uint tier3price,uint tier4price,uint tier5price) public onlyOwner
