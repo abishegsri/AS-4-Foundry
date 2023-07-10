@@ -6,8 +6,9 @@ contract DeployToken is Script
 {
 function run() external returns(Marketplace)
 {
+    string memory api="";
     vm.startBroadcast();
-    Marketplace marketplace=new Marketplace();
+    Marketplace marketplace=new Marketplace(api);
     vm.stopBroadcast();
     return marketplace;
 }
